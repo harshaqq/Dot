@@ -1,0 +1,39 @@
+# GNU Screen - main configuration file
+# All other .screenrc files will source this file to inherit settings.
+# Author: Sriharsha
+
+# Allow bold colors - necessary for some reason
+attrcolor b ".I"
+
+# Erase background with current bg color
+defbce "on"
+
+# Cache 30000 lines for scroll back
+defscrollback 30000
+
+hardstatus alwayslastline
+
+# Very nice tabbed colored hardstatus line
+hardstatus string '%{= Kd} %{= Kd}%-w%{= Kr}[%{= KW}%n %t%{= Kr}]%{= Kd}%+w %-= %{KG} %H%{KW}'
+
+# Hide hardstatus: ctrl-a f
+bind f eval "hardstatus ignore"
+
+# Show hardstatus: ctrl-a F
+bind F eval "hardstatus alwayslastline"
+startup_message off
+altscreen on
+windowlist string "%4n %h%=%f"
+shell -${SHELL}
+pow_detach_msg "Screen session for \${LOGNAME} \$:cr:\$:nl:ended"
+logfile "$HOME/.log/screen.%n.%Y-%m-%d"
+
+# Initialize screens
+screen -t BASH-SCREEN
+screen -t BASH-SCREEN
+screen -t BASH-SCREEN
+screen -t BASH-SCREEN
+screen -t BASH-SCREEN
+screen -t BASH-SCREEN
+
+select 0

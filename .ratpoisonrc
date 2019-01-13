@@ -1,0 +1,32 @@
+	
+# Swap CTRL & Caps Lock
+exec setxkbmap -option ctrl:nocaps
+exec xcompmger -o 0.9 &  
+
+set fgcolor rgb:d6/d6/d6
+set bgcolor rgb:1a/1a/1a
+set border 0
+set font Inconsolata-10
+set framemsgwait 0
+
+# Border
+set border 0
+set barpadding 0 0
+set padding 0 0 0 0
+
+# Shortcuts
+bind C-e exec emacs
+bind e exec emacs
+
+bind f exec chromium
+bind C-j exec sh $HOME/.show_bat.sh
+bind j exec sh $HOME/.show_bat.sh 
+bind h exec sh $HOME/.show_temp.sh
+
+exec sh $HOME/.monitor_hotplug.sh &
+exec nitrogen --set-auto $HOME/Downloads/wallpaper.jpg &
+# exec sh $HOME/.wallpaper.sh &
+# exec sh $HOME/.start_music.sh &
+# exec sh $HOME/.quotes.sh &
+exec rpws init 12 -k
+# exec sh $HOME/.desktop.sh &

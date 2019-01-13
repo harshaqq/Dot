@@ -36,12 +36,15 @@
 
 (defun setup-shell-path ()
   ;; Adds `PATH` environment variable to emacs session (i.e. This is for shells)
-  (when (memq window-system '(mac ns x))
+  (when (memq window-system '(mac))
     (exec-path-from-shell-initialize)))
 
 (defun setup-fonts ()
   ;; Configures the font
-  (set-frame-font "Inconsolata 18"))
+  (when (memq window-system '(x))
+    (set-frame-font "Inconsolata 12"))
+  (when (memq window-system '(mac))
+    (set-frame-font "Inconsolata 18")))
 
 (defun setup-appearance ()
   ;; Configure the appearance

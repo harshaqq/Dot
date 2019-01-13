@@ -1,8 +1,10 @@
 
 
 # NVM directory
-export NVM_DIR="$HOME/.nvm"
-. "/usr/local/opt/nvm/nvm.sh"
+if [ -d "$HOME/.nvm" ]; then
+   export NVM_DIR="$HOME/.nvm"
+   . "/usr/local/opt/nvm/nvm.sh"
+fi
 
 alias config='git --git-dir=$HOME/.cfg/ --work-tree=$HOME'
 

@@ -31,8 +31,14 @@
 (defun setup-meta-key ()
   ;; This configures meta key
   (when (eq system-type 'darwin)
-    (setq mac-command-modifier 'meta)
-    (setq mac-option-modifier nil)))
+    (setq mac-command-modifier (quote meta))
+    (setq mac-option-modifier (quote super))))
+
+(defun setup-encoding ()
+  "Configures encoding"
+    (set-terminal-coding-system 'utf-8)
+    (set-keyboard-coding-system 'utf-8)
+    (prefer-coding-system 'utf-8))
 
 (defun setup-shell-path ()
   ;; Adds `PATH` environment variable to emacs session (i.e. This is for shells)
@@ -224,14 +230,23 @@
            (emacs-lisp . t)))))
 
 (defun setup-org-protocol ()
-  (server-start)
+  (require 'server)
+  (unless (server-running-p)
+    (server-start))
   (require 'org-protocol))
 
 (defun setup-bindings ()
-  ;; Commonly used bindings
+  "Key bindings"
+  (global-set-key (kbd "C-`") (quote multi-term))
   (global-set-key (kbd "C-c 4") (quote insert-rupee))
   (global-set-key (kbd "C-c a") (quote org-agenda))
   (global-set-key (kbd "C-c c") (quote org-capture)))
+
+(defun setup-term ()
+  "Configures the term NOTE: not working"
+  (add-hook (quote term-mode-hook) (lambda ()
+                                     (local-set-key (kbd "C-p") (quote term-up))
+                                     (local-set-key (kbd "C-n") (quote term-down)))))
 
 ;; (defun setup-alias ()
 ;;   )
@@ -239,7 +254,7 @@
 (defun setup-company ()
   (setq company-dabbrev-downcase 0)
   (setq company-idle-delay 0)
-  (global-company-mode))
+  (global-company-mode 1))
 
 ;; (defun setup-git ()
 ;;   )
@@ -339,6 +354,8 @@
   (setup-org-mode)
   (setup-startup)
   (setup-spell)
+  (setup-encoding)
+  (setup-term)
   (setup-org-protocol))
 
 (add-hook (quote after-init-hook) (quote setup))
@@ -351,7 +368,7 @@
  '(debug-on-error t)
  '(org-modules
    (quote
-    (org-bbdb org-bibtex org-docview org-gnus org-habit org-info org-irc org-mhe org-rmail org-w3m)))
+    (org-bbdb org-bibtex org-crypt org-docview org-gnus org-habit org-info org-irc org-mhe org-protocol org-rmail org-w3m org-bookmark org-checklist org-drill org-learn org-screen)))
  '(package-selected-packages
    (quote
     (powerline yaml-mode web-mode sx plantuml-mode perspective org-pomodoro org-bullets multi-term magit logview ledger-mode json-mode jabber-otr ivy indium htmlize fold-this flymake-json exwm exec-path-from-shell eslint-fix company-web company-tern company-restclient calfw-org calfw-cal calfw borland-blue-theme))))

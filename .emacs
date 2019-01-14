@@ -36,14 +36,14 @@
 
 (defun setup-shell-path ()
   ;; Adds `PATH` environment variable to emacs session (i.e. This is for shells)
-  (when (memq window-system '(mac))
+  (when (memq window-system '(mac ns))
     (exec-path-from-shell-initialize)))
 
 (defun setup-fonts ()
   ;; Configures the font
   (when (memq window-system '(x))
     (set-frame-font "Inconsolata 12"))
-  (when (memq window-system '(mac))
+  (when (memq window-system '(mac ns))
     (set-frame-font "Inconsolata 18")))
 
 (defun setup-appearance ()
@@ -74,7 +74,7 @@
   ;; Configures org mode
   ;; @ -> note, ! -> timestamp, @/! -> note with timestamp
   ;; Directory where we keep .org files
-  (setq org-directory "~/Dropbox/Tasks")
+  (setq org-directory "~/Dropbox/SecondBrain")
   ;; Diary file
   (setq diary-file (expand-file-name "diary" org-directory))
 
@@ -215,6 +215,7 @@
 
   ;; Include calfw
   (require 'calfw)
+  (require 'calfw-org)
 
   ;; Org babel
   (org-babel-do-load-languages
@@ -244,6 +245,7 @@
 ;;   )
 
 (defun setup-spell ()
+
   (add-hook (quote text-mode-hook) (lambda ()
                                      (flyspell-mode 1)
                                      ))

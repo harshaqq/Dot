@@ -89,7 +89,7 @@
                                   (sequence "WAITING(w@/!)" "HOLD(h@/!)" "|" "CANCELLED(c@/!)"))))
   ;; Tags
   (setq org-tag-alist (quote ((:startgrouptag)(:grouptags)("@office" . ?o)("@personal" . ?p)(:endgrouptag)
-                              (:startgrouptag)(:grouptags)("@development" . ?d)("@debugging" . ?D)("@research" . ?r)("@study" . ?s)("actvity" . ?a)("@entry" . ?e)(:endgrouptag)
+                              (:startgrouptag)(:grouptags)("@development" . ?d)("@question" . ?q) ("@vocabulary" . ?v)("@issue" . ?i)("@note" . ?n)("@debugging" . ?D)("@research" . ?r)("@study" . ?s)("actvity" . ?a)("@entry" . ?e)(:endgrouptag)
                               (:startgrouptag)(:grouptags)("@high" . ?h)("@low" . ?l)("@medium" . ?m)(:endgrouptag)
                               (:startgrouptag)(:grouptags)("WAITING" . ?x)("HOLD" . ?x)("CANCELLED" . ?x)("ATTACH" . ?x)("FLAGGED" . ??)(:endgrouptag))))
 
@@ -130,10 +130,16 @@
                                          ("t" "TODO" entry (file+headline ,(expand-file-name "inbox.org" org-directory) "TASKS") "* TODO %i%?")
                                          ("T" "TICKLER" entry (file+headline ,(expand-file-name "tickler.org" org-directory) "TICKLER") "* %i%?%U")
                                          ("a" "ARTICLE" plain (file capture-article-file) "#+TITLE: %^{Title}\n#+DATE: %<%Y-%m-%d>")
+                                         ("v" "VOCABULARY" entry (file+headline ,(expand-file-name "tickler.org" org-directory) "VOCABULARY")
+                                          "* %^{Word} :drill:@note:@vocabulary: \n %t\n %^{Extended word (may be empty)} \n** Answer: \n%^{The definition}")
+                                         ("f" "FIXNEEDED" entry (file+headline ,(expand-file-name "tickler.org" org-directory) "FIX NEEDED")
+                                          "* %^{Subject} :@issue: \n** %^{Description}")
+                                         ("n" "NOTES" entry (file+headline ,(expand-file-name "tickler.org" org-directory) "NOTES")
+                                          "* %^{Title} :@note: \n** %^{Description}")
+                                         ("q" "QUESTIONS" entry (file+headline ,(expand-file-name "tickler.org" org-directory) "QUESTIONS")
+                                          "* %^{Question} :drill:@question: Answer: \n** Answer: \n%^{Answer}")
                                          ("p" "PROTOCOL" entry (file+headline ,(expand-file-name "tickler.org" org-directory) "INBOX")
                                           "* %^{Title}\nSource: %u, %c\n #+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n\n%?")
-                                         ("v" "VOCABULARY" entry (file+headline ,(expand-file-name "tickler.org" org-directory) "VOCABULARY")
-                                          "* %^{Word} :drill:\n %t\n %^{Extended word (may be empty)} \n** Answer: \n%^{The definition}")
                                          ("L" "PROTOCOL LINK" entry (file+headline ,(expand-file-name "tickler.org" org-directory) "INBOX")
                                           "* %?[[%:link][%:description]] \nCaptured on: %U"))))
 
@@ -218,6 +224,38 @@
   ;; Include calfw
   (require 'calfw)
   (require 'calfw-org)
+
+  ;; Change parent todo state to done, once all children are done
+  (add-hook (quote org-after-todo-statistics-hook) (lambda (n-done n-not-done)
+                                                      (let (org-log-done org-log-states)   ; turn off logging
+                                                        (org-todo (if (= n-not-done 0) "DONE" "TODO")))))
+
+  ;; Same with checkboxes
+  (defun my/org-checkbox-todo ()
+  "Switch header TODO state to DONE when all checkboxes are ticked, to TODO otherwise"
+  (let ((todo-state (org-get-todo-state)) beg end)
+    (unless (not todo-state)
+      (save-excursion
+        (org-back-to-heading t)
+        (setq beg (point))
+        (end-of-line)
+        (setq end (point))
+        (goto-char beg)
+        (if (re-search-forward "\\[\\([0-9]*%\\)\\]\\|\\[\\([0-9]*\\)/\\([0-9]*\\)\\]"
+                               end t)
+            (if (match-end 1)
+                (if (equal (match-string 1) "100%")
+                    (unless (string-equal todo-state "DONE")
+                      (org-todo 'done))
+                  (unless (string-equal todo-state "TODO")
+                    (org-todo 'todo)))
+              (if (and (> (match-end 2) (match-beginning 2))
+                       (equal (match-string 2) (match-string 3)))
+                  (unless (string-equal todo-state "DONE")
+                    (org-todo 'done))
+                (unless (string-equal todo-state "TODO")
+                  (org-todo 'todo)))))))))
+  ;; (add-hook 'org-checkbox-statistics-hook 'my/org-checkbox-todo)
 
   ;; Org babel
   (org-babel-do-load-languages

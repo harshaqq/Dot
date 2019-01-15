@@ -163,6 +163,9 @@
   (setq org-agenda-custom-commands
         (quote (("o" "Office" ((agenda "" ((org-agenda-span 1))) (tags "@office") (todo "TODO"))))))
 
+  ;; Skip entries without toto state
+  (setq org-agenda-tag-filter-preset (quote ("-drill")))
+
   ;; Don't show scheduled tasks which is done
   (setq org-agenda-skip-scheduled-if-done t)
   ;; Don't show deadline tasks which is done

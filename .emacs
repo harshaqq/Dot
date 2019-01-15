@@ -12,7 +12,7 @@
 (defun setup-package-archives ()
   ;; This function configure the package repositories and packages
   (setq package-archives (quote (("gnu" . "https://elpa.gnu.org/packages/")
-                                 ("melpa" . "https://melpa.org/packages")
+                                 ("melpa" . "https://melpa.org/packages/")
                                  ("org" . "https://orgmode.org/elpa/")
                                  ("marmalade" . "https://marmalade-repo.org/packages/"))))
   (package-initialize))
@@ -125,12 +125,6 @@
                 ("NEXT" ("WAITING") ("CANCELLED") ("HOLD"))
                 ("DONE" ("WAITING") ("CANCELLED") ("HOLD")))))
 
-;; (setq org-capture-templates `(
-;;      ("p" "Protocol" entry (file+headline ,(concat org-directory "notes.org") "Inbox")
-;;         "* %^{Title}\nSource: %u, %c\n #+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n\n%?")
-;;      ("L" "Protocol Link" entry (file+headline ,(concat org-directory "notes.org") "Inbox")
-;;         "* %? [[%:link][%:description]] \nCaptured On: %U")
-;;      ))
   ;; Capture templates
   (setq org-capture-templates (backquote(
                                          ("t" "TODO" entry (file+headline ,(expand-file-name "inbox.org" org-directory) "TASKS") "* TODO %i%?")
@@ -138,6 +132,8 @@
                                          ("a" "ARTICLE" plain (file capture-article-file) "#+TITLE: %^{Title}\n#+DATE: %<%Y-%m-%d>")
                                          ("p" "PROTOCOL" entry (file+headline ,(expand-file-name "tickler.org" org-directory) "INBOX")
                                           "* %^{Title}\nSource: %u, %c\n #+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n\n%?")
+                                         ("v" "VOCABULARY" entry (file+headline ,(expand-file-name "tickler.org" org-directory) "VOCABULARY")
+                                          "* %^{Word} :drill:\n %t\n %^{Extended word (may be empty)} \n** Answer: \n%^{The definition}")
                                          ("L" "PROTOCOL LINK" entry (file+headline ,(expand-file-name "tickler.org" org-directory) "INBOX")
                                           "* %?[[%:link][%:description]] \nCaptured on: %U"))))
 
@@ -237,6 +233,9 @@
 
 (defun setup-bindings ()
   "Key bindings"
+  (global-set-key (kbd "C-c w") (quote lookup-wiktionary))
+  (global-set-key (kbd "<f8>") (quote dictionary-lookup-definition))
+  (global-set-key (kbd "<f9>") (quote ispell-complete-word))
   (global-set-key (kbd "C-`") (quote multi-term))
   (global-set-key (kbd "C-c 4") (quote insert-rupee))
   (global-set-key (kbd "C-c a") (quote org-agenda))
@@ -371,7 +370,7 @@
     (org-bbdb org-bibtex org-crypt org-docview org-gnus org-habit org-info org-irc org-mhe org-protocol org-rmail org-w3m org-bookmark org-checklist org-drill org-learn org-screen)))
  '(package-selected-packages
    (quote
-    (org-plus-contrib powerline yaml-mode web-mode sx plantuml-mode perspective org-pomodoro org-bullets multi-term magit logview ledger-mode json-mode jabber-otr ivy indium htmlize fold-this flymake-json exwm exec-path-from-shell eslint-fix company-web company-tern company-restclient calfw-org calfw-cal calfw borland-blue-theme))))
+    (dictionary company org-plus-contrib powerline yaml-mode web-mode sx plantuml-mode perspective org-pomodoro org-bullets multi-term magit logview ledger-mode json-mode jabber-otr ivy indium htmlize fold-this flymake-json exwm exec-path-from-shell eslint-fix company-web company-tern company-restclient calfw-org calfw-cal calfw borland-blue-theme))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.

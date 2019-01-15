@@ -271,6 +271,7 @@
 
 (defun setup-bindings ()
   "Key bindings"
+  (global-set-key (kbd "C-c i") (quote toggle-input-method))
   (global-set-key (kbd "C-c w") (quote lookup-wiktionary))
   (global-set-key (kbd "<f8>") (quote dictionary-lookup-definition))
   (global-set-key (kbd "<f9>") (quote ispell-complete-word))
@@ -370,6 +371,23 @@
   (add-hook (quote plantuml-mode-hook) (lambda ()
                                          (setq tab-width 2))))
 
+
+;; true for kannada, nil for english
+(defvar toggle-english-kannada-flag nil)
+
+(defun toggle-input-method ()
+  (interactive)
+  (defun -input-select-kannada ()
+    (setq toggle-english-kannada-flag t)
+    (set-input-method "kannada-itrans"))
+
+  (defun -input-select-english ()
+    (setq toggle-english-kannada-flag nil)
+    (set-input-method "british"))
+
+  (if (eq toggle-english-kannada-flag nil)
+      (-input-select-kannada)
+    (-input-select-english)))
 
 (defun setup ()
   (setup-package-archives)

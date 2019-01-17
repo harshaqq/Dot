@@ -185,7 +185,7 @@
   (setq org-blog-directory (expand-file-name org-blog-directory-name org-directory))
 
   ;; This function is used for capturing blog
-  (defun capture-article ()
+  (defun capture-article-file ()
     (let* ((title (read-string "Slug: "))
            (slug (replace-regexp-in-string "[^a-z]+" "-" (downcase title)))
            (dir (format "%s/%s" org-blog-directory (format-time-string "%Y" (current-time)))))
@@ -211,18 +211,27 @@
   ;; Mark in dairy
   (setq calendar-mark-diary-entries-flag t)
 
-  ;; hooks
-  (add-hook (quote org-finalize-agenda-hook) (lambda ()
-                                              (setq appt-message-warning-time 10
-                                                    appt-display-diary nil
-                                                    appt-display-mode-line t
-                                                    appt-display-format (quote window)
-                                                    calendar-mark-diary-entries-flag t)
-                                              (org-agenda-to-appt)
-                                              (appt-activate 1)))
+  ;; Appointment settings
+  (require 'appt)
+  (setq appt-time-msg-list nil
+        appt-display-diary nil
+        appt-display-interval (quote 5)
+        appt-display-format (quote window)
+        appt-message-warning-time (quote 15)
+        appt-display-mode-line nil)
+  (appt-activate t)
+  (display-time)
+
+  ;; Bind org-agenda-to-appt to hook
+  (add-hook (quote org-agenda-finalize-hook) (quote org-agenda-to-appt))
 
   ;; Include events from diary
   (setq org-agenda-include-diary t)
+
+  (setq org-agenda-tags-todo-honor-ignore-options t)
+  (setq org-columns-default-format "%80ITEM(Task) %10Effort(Effort){:} %10CLOCKSUM")
+  (setq org-global-properties (quote (("Effort_ALL" . "0:15 0:30 0:45 1:00 2:00 3:00 4:00 5:00 6:00 0:00")
+                                    ("STYLE_ALL" . "habit"))))
 
   ;; Include calfw
   (require 'calfw)
@@ -260,10 +269,14 @@
                   (org-todo 'todo)))))))))
   ;; (add-hook 'org-checkbox-statistics-hook 'my/org-checkbox-todo)
 
+  (if (> (string-to-number (org-version)) 9.1)
+      (require 'org-tempo))
+
   ;; Org babel
   (org-babel-do-load-languages
    (quote org-babel-load-languages)
    (quote ((ledger . t)
+           (plantuml . t)
            (emacs-lisp . t)))))
 
 (defun setup-org-protocol ()
@@ -274,7 +287,7 @@
 
 (defun setup-bindings ()
   "Key bindings"
-  (global-set-key (kbd "C-c i") (quote toggle-input-method))
+  (global-set-key (kbd "C-c i") (quote -toggle-input-method))
   (global-set-key (kbd "C-c w") (quote lookup-wiktionary))
   (global-set-key (kbd "<f8>") (quote dictionary-lookup-definition))
   (global-set-key (kbd "<f9>") (quote ispell-complete-word))
@@ -325,6 +338,7 @@
   (desktop-save-mode 1)
   (winner-mode 1)
   (windmove-default-keybindings)
+  (powerline-default-theme)
   (setq windmove-wrap-around t))
 
 (defun setup-gpg ()
@@ -334,7 +348,7 @@
 
 (defun setup-file-extensions ()
   ;; Rest client
-  (add-to-list (quote auto-mode-alist) (quote ("\\.rest\\'" . rest-client-mode)))
+  (add-to-list (quote auto-mode-alist) (quote ("\\.rest\\'" . restclient-mode)))
   ;; config file
   (add-to-list (quote auto-mode-alist) (quote ("\\.*rc$" . conf-unix-mode)))
 
@@ -378,7 +392,7 @@
 ;; true for kannada, nil for english
 (defvar toggle-english-kannada-flag nil)
 
-(defun toggle-input-method ()
+(defun -toggle-input-method ()
   (interactive)
   (defun -input-select-kannada ()
     (setq toggle-english-kannada-flag t)
@@ -391,6 +405,18 @@
   (if (eq toggle-english-kannada-flag nil)
       (-input-select-kannada)
     (-input-select-english)))
+
+(defun setup-winner ()
+  (winner-mode 1)
+  (progn
+    (require 'windmove)
+    ;; Use Shift+Arrow_Keys to move cursor around plit panes
+    (windmove-default-keybindings)
+    ;; When cursor is on edge, move to the other side
+    (setq windmove-wrap-around t)))
+
+(defun setup-bookmark ()
+  (setq bookmark-default-file (expand-file-name "bookmarks" org-directory)))
 
 (defun setup ()
   (setup-package-archives)
@@ -414,7 +440,10 @@
   (setup-spell)
   (setup-encoding)
   (setup-term)
-  (setup-org-protocol))
+  (setup-winner)
+  (setup-bookmark)
+  (setup-org-protocol)
+  (org-agenda-to-appt))
 
 (add-hook (quote after-init-hook) (quote setup))
 
@@ -426,10 +455,10 @@
  '(debug-on-error t)
  '(org-modules
    (quote
-    (org-bbdb org-bibtex org-crypt org-docview org-gnus org-habit org-info org-irc org-mhe org-protocol org-rmail org-w3m org-bookmark org-checklist org-drill org-learn org-screen)))
+    (org-bbdb org-bibtex org-crypt org-docview org-gnus org-habit org-info org-irc org-mhe org-protocol org-rmail org-w3m org-bookmark org-checklist org-learn org-screen)))
  '(package-selected-packages
    (quote
-    (dictionary company org-plus-contrib powerline yaml-mode web-mode sx plantuml-mode perspective org-pomodoro org-bullets multi-term magit logview ledger-mode json-mode jabber-otr ivy indium htmlize fold-this flymake-json exwm exec-path-from-shell eslint-fix company-web company-tern company-restclient calfw-org calfw-cal calfw borland-blue-theme))))
+    (org-drill-table org dictionary company org-plus-contrib powerline yaml-mode web-mode sx plantuml-mode perspective org-pomodoro org-bullets multi-term magit logview ledger-mode json-mode jabber-otr ivy indium htmlize fold-this flymake-json exwm exec-path-from-shell eslint-fix company-web company-tern company-restclient calfw-org calfw-cal calfw borland-blue-theme))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.

@@ -277,6 +277,8 @@
    (quote org-babel-load-languages)
    (quote ((ledger . t)
            (plantuml . t)
+           (C . t)
+           (ditaa . t)
            (emacs-lisp . t)))))
 
 (defun setup-org-protocol ()
@@ -384,7 +386,7 @@
 (defun setup-plantuml ()
   ;; Configure plantuml
   (setq plantuml-jar-path "~/plantuml.jar")
-  (setq org-plantum-jar-path plantuml-jar-path)
+  (setq org-plantuml-jar-path plantuml-jar-path)
   (add-hook (quote plantuml-mode-hook) (lambda ()
                                          (setq tab-width 2))))
 
@@ -434,8 +436,8 @@
   (setup-file-extensions)
   (setup-web-mode)
   (setup-ledger)
-  (setup-plantuml)
   (setup-org-mode)
+  (setup-plantuml)
   (setup-startup)
   (setup-spell)
   (setup-encoding)
@@ -458,7 +460,7 @@
     (org-bbdb org-bibtex org-crypt org-docview org-gnus org-habit org-info org-irc org-mhe org-protocol org-rmail org-w3m org-bookmark org-checklist org-learn org-screen)))
  '(package-selected-packages
    (quote
-    (restclient org-drill-table org dictionary company org-plus-contrib powerline yaml-mode web-mode sx plantuml-mode perspective org-pomodoro org-bullets multi-term magit logview ledger-mode json-mode jabber-otr ivy indium htmlize fold-this flymake-json exwm exec-path-from-shell eslint-fix company-web company-tern company-restclient calfw-org calfw-cal calfw borland-blue-theme))))
+    (chess org-plus-contrib restclient org-drill-table org dictionary company powerline yaml-mode web-mode sx plantuml-mode perspective org-pomodoro org-bullets multi-term magit logview ledger-mode json-mode jabber-otr ivy indium htmlize fold-this flymake-json exwm exec-path-from-shell eslint-fix company-web company-tern company-restclient calfw-org calfw-cal calfw borland-blue-theme))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.

@@ -328,6 +328,7 @@
                                     (flyspell-mode 1)))
 
   (add-hook (quote web-mode-hook) (lambda ()
+                                    (add-node-modules-path)
                                     (flyspell-prog-mode))))
 
 (defun setup-calendar ()
@@ -420,6 +421,28 @@
 (defun setup-bookmark ()
   (setq bookmark-default-file (expand-file-name "bookmarks" org-directory)))
 
+(defun setup-lint ()
+  (require 'flycheck)
+
+  ;; turn on flychecking globally
+  (global-flycheck-mode)
+
+  ;; disable jshint since we prefer eslint checking
+  (setq-default flycheck-disabled-checkers
+                (append flycheck-disabled-checkers
+                        '(javascript-jshint)))
+
+  ;; use eslint with web-mode for jsx files
+  (flycheck-add-mode 'javascript-eslint 'web-mode)
+
+  ;; customize flycheck temp file prefix
+  (setq-default flycheck-temp-prefix ".flycheck")
+
+  ;; disable json-jsonlist checking for json files
+  (setq-default flycheck-disabled-checkers
+                (append flycheck-disabled-checkers
+                        '(json-jsonlist))))
+
 (defun setup ()
   (setup-package-archives)
   (setup-ido-mode)
@@ -445,6 +468,8 @@
   (setup-winner)
   (setup-bookmark)
   (setup-org-protocol)
+  (setup-lint)
+  (setup-company)
   (org-agenda-to-appt))
 
 (add-hook (quote after-init-hook) (quote setup))
@@ -460,7 +485,7 @@
     (org-bbdb org-bibtex org-crypt org-docview org-gnus org-habit org-info org-irc org-mhe org-protocol org-rmail org-w3m org-bookmark org-checklist org-learn org-screen)))
  '(package-selected-packages
    (quote
-    (chess org-plus-contrib restclient org-drill-table org dictionary company powerline yaml-mode web-mode sx plantuml-mode perspective org-pomodoro org-bullets multi-term magit logview ledger-mode json-mode jabber-otr ivy indium htmlize fold-this flymake-json exwm exec-path-from-shell eslint-fix company-web company-tern company-restclient calfw-org calfw-cal calfw borland-blue-theme))))
+    (add-node-modules-path js2-mode flycheck markdown-mode chess org-plus-contrib restclient org-drill-table org dictionary company powerline yaml-mode web-mode sx plantuml-mode perspective org-pomodoro org-bullets multi-term magit logview ledger-mode json-mode jabber-otr ivy indium htmlize fold-this flymake-json exwm exec-path-from-shell eslint-fix company-web company-tern company-restclient calfw-org calfw-cal calfw borland-blue-theme))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.

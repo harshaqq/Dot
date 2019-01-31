@@ -17,3 +17,4 @@ alias nano=em
 alias grep="grep --color"
 alias rm="rm -i"
 alias gpg="gpg2"
+alias org='git --git-dir=$HOME/Org/.git/'

@@ -1,5 +1,4 @@
 ;;; myemacs.el --- My emacs configuration
-
 ;; Author: harshaqq
 ;; Keywords: Emacs configuration
 ;; Package-Version: --
@@ -23,12 +22,13 @@
 ;; Disable global M-x
 (global-unset-key (kbd "M-x"))
 ;; Ido completion for M-x
-(global-set-key (kbd "M-x") (lambda ()
-                              (interactive)
-                              (call-interactively
-                               (intern(ido-completing-read
-                                       "M-x "
-                                       (all-completions "" obarray 'commandp))))))
+(global-set-key (kbd "M-x") 'smex)
+;; (global-set-key (kbd "M-x") (lambda ()
+;;                               (interactive)
+;;                               (call-interactively
+;;                                (intern(ido-completing-read
+;;                                        "M-x "
+;;                                        (all-completions "" obarray 'commandp))))))
 
 ;; Display vertically
 (setq ido-decorations (quote ("\n-> " "" "\n   " "\n   ..." "[" "]" " [No match]" " [Matched]" " [Not readable]" " [Too big]" " [Confirm]")))
@@ -72,8 +72,8 @@
 ;; MacOS command key as meta
 ;; TODO: Better to disable for desktop keyboards, need to add one condition
 (when (eq system-type 'darwin)
-  (setq mac-command-modifier 'meta)
-  (setq mac-option-modifier 'super))
+  (setq mac-command-modifier 'meta))
+  ;; (setq mac-option-modifier 'super))
 
 ;; Encoding
 (set-terminal-coding-system 'utf-8)
@@ -93,7 +93,8 @@
   (tool-bar-mode -1)
   (scroll-bar-mode 0)
   (fringe-mode 0)
-  (load-theme 'tsdh-dark))
+  (load-theme 'late-night))
+
 
 
 (setq backup-directory-alist (backquote ((".*" . ,temporary-file-directory))))
@@ -102,10 +103,12 @@
 ;; Configures org mode
 ;; @ -> note, ! -> timestamp, @/! -> note with timestamp
 ;; Directory where we keep .org files
-(setq org-directory "~/Org")
+(setq org-directory "~/Dropbox/SecondBrain")
+
+(setq org-archive-location (expand-file-name "archives/archive.org::"))
 
 ;; Diary file
-(setq diary-file (expand-file-name "diary.gpg" org-directory))
+(setq diary-file (expand-file-name "diary" org-directory))
 
 ;; TODO States
 (setq org-todo-keywords '((sequence "TODO(t)" "NEXT(n)" "PROGRESS(p@/!)" "|" "DONE(d)")
@@ -116,6 +119,7 @@
 		      (:grouptags)
 		      ("@office" . ?o)
 		      ("@home" . ?h)
+		      ("@outdoor" . ?O)
 		      (:endgrouptag)
 		      (:startgrouptag)		      ;; Priority of the task		      
 		      (:grouptags)
@@ -132,20 +136,24 @@
 		      (:startgrouptag)		      ;; Category		      
 		      (:grouptags)
 		      ("@development" . ?d)
-		      ("@testing" . ?t)
 		      ("@debugging" . ?D)
-		      ("@email" . ?E)
+		      ("@communication" . ?y)
 		      ("@followup" . ?f)
 		      ("@training" . ?t)
 		      ("@formality" . ?f)
 		      ("@travelling" . ?T)
 		      ("@vocabulary" . ?v)
+		      ("@programming" . ?p)
+		      ("@other" . ?u)
 		      ("@issue" . ?i)
+		      ("@enhancement" . ?w)
 		      ("@note" . ?n)
 		      ("@research" . ?r)
 		      ("@activity" . ?a)
 		      ("@entry" . ?E)
 		      ("@lifestyle" . ?l)
+		      ("@study" . ?S)
+		      ("brain" . ?B)
 		      ("crypt" . ?C)
 		      (:endgrouptag)
 		      (:startgrouptag)
@@ -200,34 +208,30 @@
 (defun capture-password ()
   (concat "* %^{Name} :crypt: \n " (replace-regexp-in-string "\n" "" (shell-command-to-string "pwgen -ncsy 15 1"))))
 
-(defun drill/vocabulary ()
-  (interactive)
-  (setq org-drill-question-tag "@vocabulary")
-  (setq org-drill-scope (list (expand-file-name "tickler.org.gpg" org-directory)))
-  (call-interactively 'org-drill))
+;usernames --underscores --num 1 --no_intro | xargs
 
 (setq org-capture-templates `(
-                              ("t" "TODO" entry (file+headline ,(expand-file-name "inbox.org.gpg" org-directory) "TASKS")
+                              ("t" "TODO" entry (file+headline ,(expand-file-name "inbox.org" org-directory) "TASKS")
 			       "* TODO %i%?")
-                              ("T" "TICKLER" entry (file+headline ,(expand-file-name "tickler.org.gpg" org-directory) "TICKLER")
+                              ("T" "TICKLER" entry (file+headline ,(expand-file-name "tickler.org" org-directory) "TICKLER")
 			       "* %i%?%U")
                               ("a" "ARTICLE" plain (file capture-article-file)
 			       "#+TITLE: %^{Title}\n#+DATE: %<%Y-%m-%d>")
-			      ("r", "PASSWORD" entry (file+headline ,(expand-file-name "tickler.org.gpg" org-directory) "SECRETS")
+			      ("r", "PASSWORD" entry (file+headline ,(expand-file-name "tickler.org" org-directory) "SECRETS")
 			       (function capture-password))
-			      ("o", "OBSERVATIONS" entry (file+headline ,(expand-file-name "tickler.org.gpg" org-directory) "OBSERVATIONS")
-			       "* %^{Title} :@note: \n** %^{Description}")
-                              ("v" "VOCABULARY" entry (file+headline ,(expand-file-name "tickler.org.gpg" org-directory) "VOCABULARY")
+			      ("o", "OBSERVATIONS" entry (file+headline ,(expand-file-name "tickler.org" org-directory) "OBSERVATIONS")
+			       "* %^{Title} :@note:\n** %^{Description}")
+                              ("v" "VOCABULARY" entry (file+headline ,(expand-file-name "tickler.org" org-directory) "VOCABULARY")
                                "* %^{Word} :drill:@note:@vocabulary: \n %t\n %^{Extended word (may be empty)} \n** Answer: \n%^{The definition}")
                               ("f" "FIXNEEDED" entry (file+headline ,(expand-file-name "tickler.org" org-directory) "FIX NEEDED")
                                "* %^{Subject} :@issue: \n** %^{Description}")
-                              ("n" "NOTES" entry (file+headline ,(expand-file-name "tickler.org.gpg" org-directory) "NOTES")
+                              ("n" "NOTES" entry (file+headline ,(expand-file-name "tickler.org" org-directory) "NOTES")
                                "* %^{Title} :@note: \n** %^{Description}")
-                              ("q" "QUESTIONS" entry (file+headline ,(expand-file-name "tickler.org.gpg" org-directory) "QUESTIONS")
-                               "* %^{Question} :drill:@question: \n** Answer: \n%^{Answer}")
-                              ("p" "PROTOCOL" entry (file+headline ,(expand-file-name "tickler.org.gpg" org-directory) "INBOX")
+                              ("q" "QUESTIONS" entry (file+headline ,(expand-file-name "tickler.org" org-directory) "QUESTIONS")
+                               "* %^{Title} :drill:@question: \n  %^{Question} \n** Answer: \n   %^{Answer}")
+                              ("p" "PROTOCOL" entry (file+headline ,(expand-file-name "tickler.org" org-directory) "INBOX")
                                "* %^{Title}\nSource: %u, %c\n #+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n\n%?")
-                              ("L" "PROTOCOL LINK" entry (file+headline ,(expand-file-name "tickler.org.gpg" org-directory) "INBOX")
+                              ("L" "PROTOCOL LINK" entry (file+headline ,(expand-file-name "tickler.org" org-directory) "INBOX")
                                "* %?[[%:link][%:description]] \nCaptured on: %U")))
 
 
@@ -237,15 +241,15 @@
 (setq org-refile-use-outline-path (quote file))
 
 ;; Refile targets
-(setq org-refile-targets (backquote ((,(expand-file-name "gtd.org.gpg" org-directory) :maxlevel . 3)
-                                     (,(expand-file-name "tickler.org.gpg" org-directory) :level . 1)
-                                     (,(expand-file-name "someday.org.gpg" org-directory) :maxlevel . 2))))
+(setq org-refile-targets (backquote ((,(expand-file-name "gtd.org" org-directory) :maxlevel . 3)
+                                     (,(expand-file-name "tickler.org" org-directory) :level . 1)
+                                     (,(expand-file-name "someday.org" org-directory) :maxlevel . 2))))
 
 ;; Agenda files
 (setq org-agenda-files (list
-                        (expand-file-name "inbox.org.gpg" org-directory)
-                        (expand-file-name "gtd.org.gpg" org-directory)
-                        (expand-file-name "tickler.org.gpg" org-directory)))
+                        (expand-file-name "inbox.org" org-directory)
+                        (expand-file-name "gtd.org" org-directory)
+                        (expand-file-name "tickler.org" org-directory)))
 
 (setq org-agenda-custom-commands '(("x" agenda)
 				   ("y" agenda*)
@@ -256,14 +260,46 @@
 (if (> (string-to-number (org-version)) 9.1)
     (require 'org-tempo))
 
+(define-derived-mode web-javascript-mode web-mode "WebJS"
+  "Major mode for editing web css templates."
+  (web-mode)
+  (setq web-mode-content-type "javascript"))
 (org-babel-do-load-languages
  'org-babel-load-languages
  '((ledger . t)
    (plantuml . t)
    (python . t)
    (C . t)
+   (js . t)
+   (calc . t)
+   (go . t)
+   (css . t)
    (ditaa . t)
+   (shell . t)
+   (screen . t)
+   (ruby . t)
+   (io . t)
+   (org . t)
+   (restclient . t)
+   (sass . t)
+   (gnuplot . t)
+   (css . t)
+   (makefile . t)
+   (java . t)   
    (emacs-lisp . t)))
+
+;; (require 'org-drill)
+;; (defun drill/vocabulary ()
+;;   (interactive)
+;;   (setq org-drill-question-tag "@vocabulary")
+;;   (setq org-drill-scope (list (expand-file-name "tickler.org" org-directory)))
+;;   (call-interactively 'org-drill))
+
+;; (defun drill/programming ()
+;;   (interactive)
+;;   (setq org-drill-question-tag "@programming")
+;;   (setq org-drill-scope  (list (expand-file-name "tickler.org" org-directory)))
+;;   (call-interactively 'org-drill))
 
   ;; Skip entries without toto state
 (setq org-agenda-tag-filter-preset (quote ("-drill")))
@@ -298,7 +334,7 @@ org-edit-src-content-indentation 0)
           (make-directory (expand-file-name org-blog-directory-name org-directory))
         )
     (make-directory dir))
-  (let ((file (format "%s/%s.org.gpg" dir slug)))
+  (let ((file (format "%s/%s.org" dir slug)))
     (expand-file-name file))))
 
 ;; Save all org files after refile
@@ -312,6 +348,8 @@ org-edit-src-content-indentation 0)
 
 (setq epa-file-select-keys nil)
 (require 'org-crypt)
+;; (require 'org-drill)
+(require 'org-bullets)
 ;; Encrypt before save
 (org-crypt-use-before-save-magic)
 ;; Encrypt todo's which is having crypt tag
@@ -384,6 +422,7 @@ org-edit-src-content-indentation 0)
 (global-set-key (kbd "C-c 4") (quote insert-rupee))
 (global-set-key (kbd "C-c a") (quote org-agenda))
 (global-set-key (kbd "C-c c") (quote org-capture))
+(global-set-key (kbd "<f8>") 'org-decrypt-entry)
 
 (add-hook (quote term-mode-hook) (lambda ()
                                    (local-set-key (kbd "C-p") (quote term-up))
@@ -395,8 +434,41 @@ org-edit-src-content-indentation 0)
 (add-hook (quote conf-unix-mode-hook) (lambda ()
                                         (flyspell-prog-mode)))
 
-(add-hook (quote org-mode-hook) (lambda ()
-                                  (flyspell-mode 1)))
+(add-hook 'python-mode-hook (lambda ()
+			      (setq tab-width 2)))
+
+
+(defun harshaqq/conf-unix-mode-hook ()
+  (flyspell-prog-mode))
+
+(defun harshaqq/text-mode-hook ()
+  (flyspell-mode 1))
+
+(defun harshaqq/term-mode-hook ()
+  (local-set-key (kbd "C-p") 'term-up)
+  (local-set-key (kbd "C-n") 'term-down))
+
+(defun harshaqq/org-mode-hook ()
+  (require 'org-bullets)  
+  (org-bullets-mode 1)
+  (flyspell-mode 1)
+  (org-tempo-setup))
+
+(defun harshaqq/org-capture-mode-hook ()
+  (org-bullets-mode 1))
+
+(defun harshaqq/go-mode-hook ()
+  (setq tab-width 2))
+
+(add-hook 'go-mode-hook 'harshaqq/go-mode-hook)
+
+(add-hook 'org-capture-mode-hook 'harshaqq/org-capture-mode-hook)
+(add-hook 'org-mode-hook 'harshaqq/org-mode-hook)
+
+(add-hook 'org-shiftup-final-hook 'windmove-up)
+(add-hook 'org-shiftleft-final-hook 'windmove-left)
+(add-hook 'org-shiftdown-final-hook 'windmove-down)
+(add-hook 'org-shiftright-final-hook 'windmove-right)
 
 (add-hook (quote web-mode-hook) (lambda ()
                                   (add-node-modules-path)
@@ -475,7 +547,13 @@ org-edit-src-content-indentation 0)
       (-input-select-kannada)
     (-input-select-english)))
 
-(setq bookmark-default-file (expand-file-name "bookmarks.gpg" org-directory))
+(setq bookmark-default-file (expand-file-name "bookmarks" org-directory))
+
+(require 'emms-setup)
+(emms-standard)
+(emms-all)
+(emms-default-players)
+(setq emms-stream-default-action "play")
 
 (add-hook 'after-init-hook (lambda ()
 			      (setq company-dabbrev-downcase 0)
@@ -510,13 +588,43 @@ org-edit-src-content-indentation 0)
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(ansi-color-faces-vector
+   [default default default italic underline success warning error])
+ '(ansi-color-names-vector
+   ["#242424" "#e5786d" "#95e454" "#cae682" "#8ac6f2" "#333366" "#ccaa8f" "#f6f3e8"])
+ '(custom-enabled-themes (quote (whiteboard)))
+ '(custom-safe-themes
+   (quote
+    ("fe6330ecf168de137bb5eddbf9faae1ec123787b5489c14fa5fa627de1d9f82b" "02199888a97767d7779269a39ba2e641d77661b31b3b8dd494b1a7250d1c8dc1" default)))
+ '(cycle-themes-mode nil)
  '(debug-on-error t)
  '(org-modules
    (quote
     (org-bbdb org-bibtex org-crypt org-docview org-gnus org-habit org-info org-irc org-mhe org-protocol org-rmail org-w3m org-bookmark org-checklist org-learn org-screen)))
+ '(org-src-lang-modes
+   (quote
+    (("arduino" . arduino)
+     ("redis" . redis)
+     ("php" . php)
+     ("C" . c)
+     ("C++" . c++)
+     ("asymptote" . asy)
+     ("bash" . sh)
+     ("beamer" . latex)
+     ("calc" . fundamental)
+     ("cpp" . c++)
+     ("ditaa" . artist)
+     ("dot" . fundamental)
+     ("elisp" . emacs-lisp)
+     ("ocaml" . tuareg)
+     ("screen" . shell-script)
+     ("shell" . sh)
+     ("sqlite" . sql)
+     ("js" . web-javascript)
+     ("javascript" . web-javascript))))
  '(package-selected-packages
    (quote
-    (synonyms smartparens org-kanban kanban add-node-modules-path js2-mode flycheck markdown-mode chess org-plus-contrib restclient org-drill-table org dictionary company powerline yaml-mode web-mode sx plantuml-mode perspective org-pomodoro org-bullets multi-term magit logview ledger-mode json-mode jabber-otr ivy indium htmlize fold-this flymake-json exwm exec-path-from-shell eslint-fix company-web company-tern company-restclient calfw-org calfw-cal calfw borland-blue-theme))))
+    (edit-server langtool flycheck-vale emms ob-kotlin go-playground govet ob-go dockerfile-mode go-mode persp-mode late-night-theme dad-joke cycle-quotes cycle-themes gnuplot pdf-tools org-mind-map org-brain ob-restclient smex synonyms smartparens org-kanban kanban add-node-modules-path js2-mode flycheck markdown-mode chess org-plus-contrib restclient org-drill-table org dictionary company powerline yaml-mode web-mode sx plantuml-mode perspective org-pomodoro org-bullets multi-term magit logview ledger-mode json-mode jabber-otr ivy indium htmlize fold-this flymake-json exwm exec-path-from-shell eslint-fix company-web company-tern company-restclient calfw-org calfw-cal calfw borland-blue-theme))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.

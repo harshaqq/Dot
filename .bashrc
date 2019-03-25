@@ -18,3 +18,5 @@ alias grep="grep --color"
 alias rm="rm -i"
 alias gpg="gpg2"
 alias org='git --git-dir=$HOME/Org/.git/'
+alias ocom='git --git-dir=$HOME/Org/.git/ commit -m "Commit -m $(date)"'
+alias opush='git --git-dir=$HOME/Org/.git/ push'

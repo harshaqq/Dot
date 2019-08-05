@@ -1,7 +1,6 @@
 ;;; myemacs.el --- My emacs configuration
 ;; Author: harshaqq
 ;; Keywords: Emacs configuration
-;; Package-Version: --
 ;; Version 0.1.0
 
 ;; Setup repository for packages
@@ -13,45 +12,44 @@
 ;; Initialize packages
 (package-initialize)
 
-;; Enable ido mode
-(ido-mode)
+;; Enable evil mode
+(evil-mode 1)
+
+;; (with-eval-after-load 'python
+;;   (defun python-shell-completion-native-try ()
+;;     "Return non-nil if can trigger native completion."
+;;     (let ((python-shell-completion-native-enable t)
+;;           (python-shell-completion-native-output-timeout
+;;            python-shell-completion-native-try-output-timeout))
+;;       (python-shell-completion-native-get-completions
+;;        (get-buffer-process (current-buffer))
+;;        nil "_"))))
 
 ;; Fuzzy matching
-(setq ido-enable-flex-matching t)
+;; (setq ido-enable-flex-matching t)
 
-;; Disable global M-x
-(global-unset-key (kbd "M-x"))
-;; Ido completion for M-x
-(global-set-key (kbd "M-x") 'smex)
-;; (global-set-key (kbd "M-x") (lambda ()
-;;                               (interactive)
-;;                               (call-interactively
-;;                                (intern(ido-completing-read
-;;                                        "M-x "
-;;                                        (all-completions "" obarray 'commandp))))))
 
-;; Display vertically
-(setq ido-decorations (quote ("\n-> " "" "\n   " "\n   ..." "[" "]" " [No match]" " [Matched]" " [Not readable]" " [Too big]" " [Confirm]")))
+(global-set-key (kbd "C-x b") 'switch-to-buffer)
+(global-set-key (kbd "C-x C-b") 'ibuffer)
+(global-set-key (kbd "C-=") 'ispell-word)
 
-(add-hook 'ido-minibuffer-setup-hook (lambda ()
-                                       (set (make-local-variable 'trucate-lines) nil)))
+(global-set-key (kbd "C-s") 'swiper)
 
-(add-hook 'ido-setup-hook (lambda ()
-                            (define-key ido-completion-map (kbd "C-n") 'ido-next-match)
-                            (define-key ido-completion-map (kbd "C-p") 'ido-prev-match)
-                            ;; For dired, After C-x b press C-d for directories
-                            (defun ido-swith-to-dired (&optional removep)
-                              (setq ido-cur-list
-                                    (remove-if-not (lambda (buf-name)
-                                                     (setq buf (get-buffer buf-name))
-                                                     (when (buffer-live-p buf)
-                                                       (with-current-buffer buf
-                                                         (eq major-mode 'dired-mode))))
-                                                   ido-cur-list)))
-                            (define-key ido-completion-map (kbd "C-d") 'ido-swith-to-dired)))
+(global-set-key (kbd "M-x") 'counsel-M-x)
+(global-set-key (kbd "C-x C-f") 'counsel-find-file)
+
+(global-set-key (kbd "C-c p f") 'projectile-find-file)
+
+(projectile-mode 1)
+(setq projectile-keymap-prefix (kbd "C-c p"))
+
+;;Exit insert mode by pressing j and then j quickly
+(setq key-chord-two-keys-delay 0.5)
+(key-chord-define evil-insert-state-map "jj" 'evil-normal-state)
+(key-chord-mode 1)
 
 ;; Increase garbage collection value
-(defvar harshaqq/gc-cons-threshold (* 10 gc-cons-threshold))
+(defvar harshaqq/gc-cons-threshold (* 20 gc-cons-threshold))
 (setq gc-cons-threshold harshaqq/gc-cons-threshold)
 
 (setq user-emacs-directory "~/.emacd.d/")
@@ -59,6 +57,54 @@
 ;; Startup
 ;; Disable startup screen
 (setq inhibit-startup-screen t)
+
+(setq speedbar-use-images nil)
+(make-face 'speedbar-face)
+(set-face-font 'speedbar-face "Menlo-12")
+(setq speedbar-mode-hook '(lambda () (buffer-face-set 'speedbar-face)))
+
+;(require 'yasnippet)
+;; (require 'yasnippets)
+;(yas-reload-all)
+(add-hook 'ruby-mode-hook (lambda ()
+			    ;; (yas-minor-mode)
+			    (ruby-electric-mode)
+			    (robe-mode)))
+
+;; (require 'auto-complete)
+
+;; (add-hook 'robe-mode-hook 'ac-robe-setup)
+
+(require 'sr-speedbar)
+
+(setq speedbar-frame-parameters
+      '((minibuffer)
+	(width . 40)
+	(border-width . 0)
+	(menu-bar-lines . 0)
+	(tool-bar-lines . 0)
+	(unsplittable . t)
+	(left-fringe . 0)))
+(setq speedbar-hide-button-brackets-flag t)
+(setq speedbar-show-unknown-files t)
+(setq speedbar-smart-directory-expand-flag t)
+(setq speedbar-use-images nil)
+(setq sr-speedbar-auto-refresh nil)
+(setq sr-speedbar-max-width 70)
+(setq sr-speedbar-right-side nil)
+(setq sr-speedbar-width-console 40)
+
+(when window-system
+  (defadvice sr-speedbar-open (after sr-speedbar-open-resize-frame activate)
+    (set-frame-width (selected-frame)
+                     (+ (frame-width) sr-speedbar-width)))
+  (ad-enable-advice 'sr-speedbar-open 'after 'sr-speedbar-open-resize-frame)
+
+  (defadvice sr-speedbar-close (after sr-speedbar-close-resize-frame activate)
+    (sr-speedbar-recalculate-width)
+    (set-frame-width (selected-frame)
+                     (- (frame-width) sr-speedbar-width)))
+(ad-enable-advice 'sr-speedbar-close 'after 'sr-speedbar-close-resize-frame))
 
 ;; Disable startup message
 (setq inhibit-startup-message t)
@@ -89,13 +135,11 @@
 (menu-bar-mode -1)
 
 (when (display-graphic-p)
-  (set-frame-font "Inconsolata 12")  
+  (set-frame-font "Menlo 12")  
   (tool-bar-mode -1)
   (scroll-bar-mode 0)
   (fringe-mode 0)
   (load-theme 'late-night))
-
-
 
 (setq backup-directory-alist (backquote ((".*" . ,temporary-file-directory))))
 (setq auto-save-file-name-transforms (backquote ((".*" ,temporary-file-directory))))
@@ -155,6 +199,11 @@
 		      ("@study" . ?S)
 		      ("brain" . ?B)
 		      ("crypt" . ?C)
+		      ("@catchup" . ?Y)
+		      ("@micro" . ?1)
+		      ("@bank" . ?2)
+		      ("@docs" . ?3)
+		      ("taskjuggler_project" . ??)
 		      (:endgrouptag)
 		      (:startgrouptag)
 		      (:grouptags)
@@ -208,7 +257,10 @@
 (defun capture-password ()
   (concat "* %^{Name} :crypt: \n " (replace-regexp-in-string "\n" "" (shell-command-to-string "pwgen -ncsy 15 1"))))
 
-;usernames --underscores --num 1 --no_intro | xargs
+(defun capture-pin ()
+  (setq pin/length (read-string "Length: "))
+  (setq pin/commmand (concat "python -c " "'from random import randint;" "print(randint(" (number-to-string (expt 10 (- (string-to-number pin/length) 1))) "," (number-to-string (- (expt 10 (string-to-number pin/length)) 1)) "))'"))
+  (concat "* %^{Name} :crypt: \n  " (replace-regexp-in-string "\n" "" (shell-command-to-string pin/commmand))))
 
 (setq org-capture-templates `(
                               ("t" "TODO" entry (file+headline ,(expand-file-name "inbox.org" org-directory) "TASKS")
@@ -219,6 +271,8 @@
 			       "#+TITLE: %^{Title}\n#+DATE: %<%Y-%m-%d>")
 			      ("r", "PASSWORD" entry (file+headline ,(expand-file-name "tickler.org" org-directory) "SECRETS")
 			       (function capture-password))
+			      ("b", "BANK" entry (file+headline ,(expand-file-name "tickler.org" org-directory) "SECRETS")
+			       (function capture-pin))
 			      ("o", "OBSERVATIONS" entry (file+headline ,(expand-file-name "tickler.org" org-directory) "OBSERVATIONS")
 			       "* %^{Title} :@note:\n** %^{Description}")
                               ("v" "VOCABULARY" entry (file+headline ,(expand-file-name "tickler.org" org-directory) "VOCABULARY")
@@ -277,6 +331,7 @@
    (ditaa . t)
    (shell . t)
    (screen . t)
+   (html-chrome . t)
    (ruby . t)
    (io . t)
    (org . t)
@@ -291,7 +346,7 @@
 ;; (require 'org-drill)
 ;; (defun drill/vocabulary ()
 ;;   (interactive)
-;;   (setq org-drill-question-tag "@vocabulary")
+;;   (setq org-drill-question-tag "@vocabulary")p
 ;;   (setq org-drill-scope (list (expand-file-name "tickler.org" org-directory)))
 ;;   (call-interactively 'org-drill))
 
@@ -344,6 +399,7 @@ org-edit-src-content-indentation 0)
 
 (require 'epa-file)
 (epa-file-enable)
+(setq epa-pinentry-mode 'loopback)
 (setq epa-file-encrypt-to "virtualxi99@gmail.com")
 
 (setq epa-file-select-keys nil)
@@ -373,14 +429,16 @@ org-edit-src-content-indentation 0)
 (display-time)
 
 ;; Bind org-agenda-to-appt to hook
-(add-hook (quote org-agenda-finalize-hook) (quote org-agenda-to-appt))
+(add-hook (quote org-agenda-finalize-hook)
+	  (quote org-agenda-to-appt)
+	  (org-agenda-columns))
 
 ;; Include events from diary
 (setq org-agenda-include-diary t)
 
 (setq org-agenda-tags-todo-honor-ignore-options t)
 (setq org-columns-default-format "%80ITEM(Task) %10Effort(Effort){:} %10CLOCKSUM")
-(setq org-global-properties (quote (("Effort_ALL" . "0:15 0:30 0:45 1:00 2:00 3:00 4:00 5:00 6:00 0:00")
+(setq org-global-properties (quote (("Effort_ALL" . "0:15 0:30 0:45 1:00 2:00 3:00 4:00 5:00 6:00 7:00 8:00 9:00 9:30")
                                     ("STYLE_ALL" . "habit"))))
 
 ;; Include calfw
@@ -414,6 +472,8 @@ org-edit-src-content-indentation 0)
 (server-start))
 (require 'org-protocol)
 
+(global-set-key (kbd "M-x") 'smex)
+
 (global-set-key (kbd "C-c i") (quote -toggle-input-method))
 (global-set-key (kbd "C-c w") (quote lookup-wiktionary))
 (global-set-key (kbd "<f8>") (quote dictionary-lookup-definition))
@@ -422,7 +482,8 @@ org-edit-src-content-indentation 0)
 (global-set-key (kbd "C-c 4") (quote insert-rupee))
 (global-set-key (kbd "C-c a") (quote org-agenda))
 (global-set-key (kbd "C-c c") (quote org-capture))
-(global-set-key (kbd "<f8>") 'org-decrypt-entry)
+(global-set-key (kbd "<f1>") 'org-decrypt-entry)
+(global-set-key (kbd "<f12>") 'bookmark-bmenu-list)
 
 (add-hook (quote term-mode-hook) (lambda ()
                                    (local-set-key (kbd "C-p") (quote term-up))
@@ -437,6 +498,13 @@ org-edit-src-content-indentation 0)
 (add-hook 'python-mode-hook (lambda ()
 			      (setq tab-width 2)))
 
+(setq jdee-server-dir "~/jdee-server/")
+
+(require 'eclim)
+(setq eclimd-autostart 1)
+(defun my-java-mode-hook ()
+  (eclim-mode 1))
+(add-hook 'java-mode-hook 'my-java-mode-hook)   
 
 (defun harshaqq/conf-unix-mode-hook ()
   (flyspell-prog-mode))
@@ -450,12 +518,12 @@ org-edit-src-content-indentation 0)
 
 (defun harshaqq/org-mode-hook ()
   (require 'org-bullets)  
-  (org-bullets-mode 1)
+  (org-bullets-mode)
   (flyspell-mode 1)
   (org-tempo-setup))
 
 (defun harshaqq/org-capture-mode-hook ()
-  (org-bullets-mode 1))
+  (org-bullets-mode))
 
 (defun harshaqq/go-mode-hook ()
   (setq tab-width 2))
@@ -474,11 +542,20 @@ org-edit-src-content-indentation 0)
                                   (add-node-modules-path)
                                   (flyspell-prog-mode)))
 
+(add-hook 'typescript-mode-hook (lambda ()
+				  (add-node-modules-path)))
+
 
 
 (setq calendar-latitude 12.9)
 (setq calendar-longitude 77.5)
 (setq calendar-location-name "Bengaluru, IN")
+
+;; * Sunrise
+;;   :PROPERTIES:
+;;   :CATEGORY: Sunrise
+;;   :END:
+;; &%%(diary-sunrise-sunset)
 
 (desktop-save-mode 1)
 (winner-mode 1)
@@ -488,6 +565,7 @@ org-edit-src-content-indentation 0)
 
 ;; Rest client
 (add-to-list (quote auto-mode-alist) (quote ("\\.rest\\'" . restclient-mode)))
+(add-to-list 'auto-mode-alist '("\\.tsx\\'" . web-mode))
 ;; config file
 (add-to-list (quote auto-mode-alist) (quote ("\\.*rc$" . conf-unix-mode)))
 
@@ -559,6 +637,8 @@ org-edit-src-content-indentation 0)
 			      (setq company-dabbrev-downcase 0)
 			      (setq company-idle-delay 0)
 			      (global-company-mode 1)
+			      (add-to-list 'company-backends 'company-tern)
+			      (add-to-list 'company-backends 'company-robe)
 			      (require 'flycheck)
 
 			      ;; turn on flychecking globally
@@ -568,9 +648,18 @@ org-edit-src-content-indentation 0)
 			      (setq-default flycheck-disabled-checkers
 					    (append flycheck-disabled-checkers
 						    '(javascript-jshint)))
+
+			      (setq-default flycheck-disabled-checkers
+					    (append flycheck-disabled-checkers
+						    '(ruby-rubylint)))			      
 			      
 			      ;; use eslint with web-mode for jsx files
 			      (flycheck-add-mode 'javascript-eslint 'web-mode)
+			      ;; (flycheck-add-next-checker 'tsx-tide '(warning . typescript-tslint) 'append)
+			      (flycheck-add-mode 'typescript-tslint 'web-mode)
+			      (flycheck-add-mode 'typescript-tslint 'typescript-mode)
+			      (flycheck-add-mode 'ruby-rubylint 'ruby-mode)
+			      (add-to-list 'flycheck-checkers 'ruby-rubocop)
 			      
 			      ;; customize flycheck temp file prefix
 			      (setq-default flycheck-temp-prefix ".flycheck")
@@ -581,6 +670,8 @@ org-edit-src-content-indentation 0)
 						    '(json-jsonlist)))
 			      (require 'bookmark)
 			      (bookmark-bmenu-list)
+			      (company-quickhelp-mode)
+			      (require 'company-web-html)
 			      (switch-to-buffer "*Bookmark List*")))
 
 (custom-set-variables
@@ -595,9 +686,10 @@ org-edit-src-content-indentation 0)
  '(custom-enabled-themes (quote (whiteboard)))
  '(custom-safe-themes
    (quote
-    ("fe6330ecf168de137bb5eddbf9faae1ec123787b5489c14fa5fa627de1d9f82b" "02199888a97767d7779269a39ba2e641d77661b31b3b8dd494b1a7250d1c8dc1" default)))
+    ("64326a40de94bb2e1501334e6fc7c618ef687eb2a5f5bf2978d43d23e6c26512" "fe6330ecf168de137bb5eddbf9faae1ec123787b5489c14fa5fa627de1d9f82b" "02199888a97767d7779269a39ba2e641d77661b31b3b8dd494b1a7250d1c8dc1" default)))
  '(cycle-themes-mode nil)
  '(debug-on-error t)
+ '(ivy-mode t)
  '(org-modules
    (quote
     (org-bbdb org-bibtex org-crypt org-docview org-gnus org-habit org-info org-irc org-mhe org-protocol org-rmail org-w3m org-bookmark org-checklist org-learn org-screen)))
@@ -624,7 +716,7 @@ org-edit-src-content-indentation 0)
      ("javascript" . web-javascript))))
  '(package-selected-packages
    (quote
-    (edit-server langtool flycheck-vale emms ob-kotlin go-playground govet ob-go dockerfile-mode go-mode persp-mode late-night-theme dad-joke cycle-quotes cycle-themes gnuplot pdf-tools org-mind-map org-brain ob-restclient smex synonyms smartparens org-kanban kanban add-node-modules-path js2-mode flycheck markdown-mode chess org-plus-contrib restclient org-drill-table org dictionary company powerline yaml-mode web-mode sx plantuml-mode perspective org-pomodoro org-bullets multi-term magit logview ledger-mode json-mode jabber-otr ivy indium htmlize fold-this flymake-json exwm exec-path-from-shell eslint-fix company-web company-tern company-restclient calfw-org calfw-cal calfw borland-blue-theme))))
+    (key-chord counsel projectile-speedbar undo-tree evil bundler ox-reveal justify-kp nov jenkins jtags log4j-mode typescript typescript-mode edit-server langtool flycheck-vale emms ob-kotlin go-playground govet ob-go dockerfile-mode go-mode persp-mode late-night-theme dad-joke cycle-quotes cycle-themes gnuplot pdf-tools org-mind-map org-brain ob-restclient smex synonyms smartparens org-kanban kanban add-node-modules-path js2-mode flycheck markdown-mode chess org-plus-contrib restclient org-drill-table org dictionary company powerline yaml-mode web-mode sx plantuml-mode perspective org-pomodoro org-bullets multi-term magit logview ledger-mode json-mode jabber-otr ivy indium htmlize fold-this flymake-json exwm exec-path-from-shell eslint-fix company-web company-tern company-restclient calfw-org calfw-cal calfw borland-blue-theme))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.

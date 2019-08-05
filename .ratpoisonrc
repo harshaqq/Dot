@@ -18,7 +18,7 @@ set padding 0 0 0 0
 bind C-e exec emacs
 bind e exec emacs
 
-bind f exec chromium
+bind f exec Programs/firefox/firefox
 bind C-j exec sh $HOME/.show_bat.sh
 bind j exec sh $HOME/.show_bat.sh 
 bind h exec sh $HOME/.show_temp.sh
